@@ -37,25 +37,32 @@ def group_users():
     if not token:
         return jsonify({'error': 'No token'}), 401
     try:
-        # Get all roles/groups
-        r = requests.get(f'{BASE}/api/v4/roles', headers={'Authorization': f'Bearer {token}'}, timeout=15)
-        roles_data = r.json()
-        roles = roles_data.get('_embedded', {}).get('roles', [])
-        target_role = next((role for role in roles if role.get('name') == group_name), None)
+        # Try groups endpoint
+        r = requests.get(f'{BASE}/api/v4/users/groups', headers={'Authorization': f'Bearer {token}'}, params={'limit': 250}, timeout=15)
+        groups_data = r.json()
+        groups = groups_data.get('_embedded', {}).get('groups', [])
+
+        target_group = next((g for g in groups if g.get('name') == group_name), None)
 
         # Get all users
-        users_r = requests.get(f'{BASE}/api/v4/users', headers={'Authorization': f'Bearer {token}'}, params={'limit': 250}, timeout=15)
+        users_r = requests.get(f'{BASE}/api/v4/users', headers={'Authorization': f'Bearer {token}'}, params={'limit': 250, 'with': 'group'}, timeout=15)
         users_data = users_r.json()
         users = users_data.get('_embedded', {}).get('users', [])
 
-        if target_role:
-            role_id = target_role['id']
-            filtered = [u for u in users if u.get('role_id') == role_id]
+        if target_group:
+            group_id = target_group['id']
+            filtered = [u for u in users if u.get('group_id') == group_id or
+                        any(g.get('id') == group_id for g in (u.get('_embedded', {}).get('groups', [])))]
         else:
-            # fallback — return all users if group not found
             filtered = users
 
-        return jsonify({'users': filtered, 'group_found': target_role is not None, 'group_name': group_name})
+        return jsonify({
+            'users': filtered,
+            'group_found': target_group is not None,
+            'group_name': group_name,
+            'all_groups': [{'id': g['id'], 'name': g['name']} for g in groups],
+            'debug_users_sample': [{'id': u['id'], 'name': u['name'], 'group_id': u.get('group_id'), 'embedded': u.get('_embedded', {})} for u in users[:3]]
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
