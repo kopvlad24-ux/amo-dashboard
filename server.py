@@ -8,6 +8,8 @@ CORS(app)
 
 SUBDOMAIN = 'c21pp'
 BASE = f'https://{SUBDOMAIN}.amocrm.ru'
+CLUB_GROUP_ID = 689470  # Клуб чемпионов
+EXCLUDED_USER_IDS = {13290234, 13324978}  # Валиева Валерия, Фатхуллов Рустем
 
 @app.route('/')
 def index():
@@ -33,35 +35,30 @@ def proxy(path):
 @app.route('/api/group_users')
 def group_users():
     token = request.headers.get('X-Token')
-    group_name = request.args.get('name', 'Клуб чемпионов')
     if not token:
         return jsonify({'error': 'No token'}), 401
     try:
-        # Try groups endpoint
-        r = requests.get(f'{BASE}/api/v4/users/groups', headers={'Authorization': f'Bearer {token}'}, params={'limit': 250}, timeout=15)
-        groups_data = r.json()
-        groups = groups_data.get('_embedded', {}).get('groups', [])
-
-        target_group = next((g for g in groups if g.get('name') == group_name), None)
-
-        # Get all users
-        users_r = requests.get(f'{BASE}/api/v4/users', headers={'Authorization': f'Bearer {token}'}, params={'limit': 250, 'with': 'group'}, timeout=15)
-        users_data = users_r.json()
+        r = requests.get(
+            f'{BASE}/api/v4/users',
+            headers={'Authorization': f'Bearer {token}'},
+            params={'limit': 250, 'with': 'group'},
+            timeout=15
+        )
+        users_data = r.json()
         users = users_data.get('_embedded', {}).get('users', [])
 
-        if target_group:
-            group_id = target_group['id']
-            filtered = [u for u in users if u.get('group_id') == group_id or
-                        any(g.get('id') == group_id for g in (u.get('_embedded', {}).get('groups', [])))]
-        else:
-            filtered = users
+        filtered = [
+            u for u in users
+            if u.get('rights', {}).get('group_id') == CLUB_GROUP_ID
+            and u.get('rights', {}).get('is_active', False)
+            and u.get('id') not in EXCLUDED_USER_IDS
+        ]
 
         return jsonify({
             'users': filtered,
-            'group_found': target_group is not None,
-            'group_name': group_name,
-            'all_groups': [{'id': g['id'], 'name': g['name']} for g in groups],
-            'debug_users_sample': [{'id': u['id'], 'name': u['name'], 'group_id': u.get('group_id'), 'embedded': u.get('_embedded', {})} for u in users[:3]]
+            'group_found': True,
+            'group_name': 'Клуб чемпионов',
+            'count': len(filtered)
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
