@@ -347,7 +347,7 @@ async function loadAll() {
 
     // Все активные лиды (фильтруем по клубу)
     allLeads = (await fetchAll('leads', { 'with': 'tags' }))
-      .filter(l => filteredUserIds.has(l.responsible_user_id));
+      .filter(l => filteredUserIds.has(l.responsible_user_id) && (!novostroiId || l.pipeline_id === novostroiId));
 
     // Новые лиды за период в воронке Новостройки 2.0
     const dateFrom = toTs(cfg.dateFrom || document.getElementById('inp-date-from').value);
@@ -400,8 +400,11 @@ function renderDashboard(leads, newL, tasks, users, stages) {
     const name = users[uid] || `ID:${uid}`;
     const stageInfo = stages[l.status_id] || { name: '—', pipeline: '—' };
     if (!brokerMap[uid]) brokerMap[uid] = { name, uid, leads: [], stageCounts: {}, newLeads: [] };
-    brokerMap[uid].leads.push(l);
-    brokerMap[uid].stageCounts[stageInfo.name] = (brokerMap[uid].stageCounts[stageInfo.name]||0)+1;
+    // Активная воронка = только этапы 3-9
+    if (stageInfo.name.match(/^[3-9]\./)) {
+      brokerMap[uid].leads.push(l);
+      brokerMap[uid].stageCounts[stageInfo.name] = (brokerMap[uid].stageCounts[stageInfo.name]||0)+1;
+    }
   });
   newL.forEach(l => {
     const uid = l.responsible_user_id;
@@ -414,7 +417,8 @@ function renderDashboard(leads, newL, tasks, users, stages) {
   leads.forEach(l => { if ((stages[l.status_id]?.name||'').match(/^[3-9]\./)) totalQual++; });
   const totalConv = newL.length > 0 ? Math.round(totalQual / newL.length * 100) : 0;
 
-  document.getElementById('kpi-total').textContent = leads.length;
+  const activeLeads = leads.filter(l => (stages[l.status_id]?.name||'').match(/^[3-9]\./));
+  document.getElementById('kpi-total').textContent = activeLeads.length;
   document.getElementById('kpi-new').textContent = newL.length;
   document.getElementById('kpi-qual').textContent = totalQual;
   document.getElementById('kpi-overdue').textContent = overdueTasks.length;
@@ -493,9 +497,9 @@ function renderDashboard(leads, newL, tasks, users, stages) {
     </tr>`;
   }).join('') || '<tr><td colspan="7" class="empty">Нет новых лидов за период</td></tr>';
 
-  // Воронка
+  // Воронка — только этапы 3-9 Новостройки 2.0
   const stageTotals = {};
-  leads.forEach(l => { const s = stages[l.status_id]?.name||'Прочее'; stageTotals[s]=(stageTotals[s]||0)+1; });
+  leads.forEach(l => { const s = stages[l.status_id]?.name||''; if(s.match(/^[3-9]\./)) stageTotals[s]=(stageTotals[s]||0)+1; });
   const maxVal = Math.max(...Object.values(stageTotals), 1);
   const order = ['1. Новая заявка','2. Взят в работу','~ НЕ дозвонился','3. Квалифицирован','4. Встреча назначена','5. Встреча проведена','6. Показ назначен','7. Показ проведен','8. Бронь объекта','9. Подписание ДДУ','~ Архив'];
   const funnelKeys = order.filter(s=>stageTotals[s]).concat(Object.keys(stageTotals).filter(s=>!order.includes(s)&&stageTotals[s]));
