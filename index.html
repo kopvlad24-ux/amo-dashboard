@@ -305,23 +305,31 @@ async function loadAll() {
   btn.disabled = true; btn.textContent = '↻ ЗАГРУЗКА...';
 
   try {
+    // Получаем пользователей отдела «Клуб чемпионов»
+    const groupRes = await fetch('/api/group_users?name=' + encodeURIComponent('Клуб чемпионов'), { headers: { 'X-Token': cfg.token } });
+    const groupData = await groupRes.json();
+    const groupUserIds = new Set((groupData.users || []).map(u => u.id));
+    if (!groupData.group_found) showToast('Отдел «Клуб чемпионов» не найден, показываю всех', 'error');
+
     const usersRaw = await fetchAll('users');
     const users = {};
     usersRaw.forEach(u => users[u.id] = u.name);
+
+    const filteredUserIds = groupData.group_found ? groupUserIds : new Set(usersRaw.map(u => u.id));
 
     const pipelinesRaw = await fetchAll('leads/pipelines');
     const stages = {};
     pipelinesRaw.forEach(p => (p._embedded?.statuses || []).forEach(s => stages[s.id] = s.name));
 
-    allLeads = await fetchAll('leads', { 'with': 'tags' });
+    allLeads = (await fetchAll('leads', { 'with': 'tags' })).filter(l => filteredUserIds.has(l.responsible_user_id));
 
     const dateFrom = toTs(cfg.dateFrom || document.getElementById('inp-date-from').value);
     const dateTo = toTs(cfg.dateTo || document.getElementById('inp-date-to').value) + 86399;
-    newLeads = await fetchAll('leads', {
+    newLeads = (await fetchAll('leads', {
       'filter[created_at][from]': dateFrom,
       'filter[created_at][to]': dateTo,
       'with': 'tags'
-    });
+    })).filter(l => filteredUserIds.has(l.responsible_user_id));
 
     const tasks = await fetchAll('tasks', { 'filter[is_completed]': 0 });
 
