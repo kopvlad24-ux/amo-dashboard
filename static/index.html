@@ -365,8 +365,10 @@ async function loadAll() {
       (!novostroiId || l.pipeline_id === novostroiId)
     );
 
-    // Задачи
-    const tasks = await fetchAll('tasks', { 'filter[is_completed]': 0 });
+    // Задачи — только по лидам из нашей воронки
+    const allLeadIds = new Set(allLeads.map(l => l.id));
+    const tasksRaw = await fetchAll('tasks', { 'filter[is_completed]': 0 });
+    const tasks = tasksRaw.filter(t => t.entity_type === 'leads' && allLeadIds.has(t.entity_id));
 
     _lastUsers = users; _lastStages = stages;
     renderDashboard(allLeads, newLeads, tasks, users, stages);
