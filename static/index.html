@@ -26,11 +26,10 @@
   .status-dot.loading { background: var(--accent); animation: pulse 1s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .config-panel { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 32px; }
-  .config-panel h3 { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 14px; }
-  .config-grid { display: grid; grid-template-columns: 1fr 1fr 160px 160px 160px 160px auto; gap: 10px; align-items: end; }
+  .config-panel { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; }
+  .config-grid { display: flex; gap: 10px; align-items: end; }
   .field label { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
-  .field input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 12px; outline: none; transition: border-color 0.2s; }
+  .field input { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 12px; outline: none; transition: border-color 0.2s; }
   .field input:focus { border-color: var(--accent); }
   .field input[type="date"] { color-scheme: dark; }
   .btn-save { background: var(--surface2); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 8px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.2s; letter-spacing: 1px; height: 36px; white-space: nowrap; }
@@ -50,16 +49,17 @@
   .section-subtitle { font-size: 12px; color: var(--muted2); margin-bottom: 16px; margin-top: -8px; font-family: 'IBM Plex Mono', monospace; }
 
   .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 32px; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  table { width: 100%; border-collapse: collapse; min-width: 860px; }
   thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
   th { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; padding: 12px 14px; text-align: left; font-weight: 400; white-space: nowrap; }
   th.num { text-align: right; }
-  th.section-header { background: var(--bg); color: var(--accent); font-size: 9px; letter-spacing: 2px; padding: 8px 14px; border-top: 1px solid var(--border); }
   td { padding: 13px 14px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
   tbody tr:hover { background: rgba(255,255,255,0.02); }
   td.num { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
   .broker-name { font-weight: 500; }
+  .broker-link { cursor: pointer; color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+  .broker-link:hover { border-bottom-color: var(--accent); }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
   .badge-warn { background: rgba(232,125,62,0.15); color: var(--accent2); }
   .badge-danger { background: rgba(232,85,85,0.15); color: var(--red); }
@@ -86,8 +86,6 @@
   .filter-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted2); border-radius: 4px; padding: 5px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.15s; }
   .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  .divider-row td { background: var(--bg); padding: 6px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid var(--border); }
-
   .error-msg { background: rgba(232,85,85,0.1); border: 1px solid rgba(232,85,85,0.3); border-radius: 6px; padding: 20px 24px; color: var(--red); font-family: 'IBM Plex Mono', monospace; font-size: 13px; margin-bottom: 24px; display: none; }
   .info-msg { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 16px 24px; color: var(--muted2); font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-bottom: 24px; display: none; }
   .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 20px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text); z-index: 999; transform: translateY(60px); opacity: 0; transition: all 0.3s; }
@@ -95,6 +93,28 @@
   .toast.success { border-color: var(--green); color: var(--green); }
   .toast.error { border-color: var(--red); color: var(--red); }
   .empty { text-align: center; padding: 40px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+  /* BROKER DRILLDOWN */
+  .dd-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; }
+  .dd-overlay.open { display: block; }
+  .dd-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(860px,100vw); background: var(--bg); border-left: 1px solid var(--border); overflow-y: auto; z-index: 201; transform: translateX(100%); transition: transform 0.28s cubic-bezier(.4,0,.2,1); }
+  .dd-panel.open { transform: translateX(0); }
+  .dd-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 28px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; gap: 16px; }
+  .dd-name { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; color: var(--accent); line-height: 1; }
+  .dd-meta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted2); margin-top: 4px; }
+  .dd-close { background: var(--surface2); border: 1px solid var(--border); color: var(--muted2); border-radius: 4px; padding: 8px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+  .dd-close:hover { border-color: var(--accent); color: var(--accent); }
+  .dd-kpi { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid var(--border); }
+  .dd-kpi .kpi-card { border-radius: 0; border: none; border-right: 1px solid var(--border); }
+  .dd-kpi .kpi-card:last-child { border-right: none; }
+  .dd-kpi .kpi-value { font-size: 36px; }
+  .dd-body { padding: 28px; }
+  .stage-bar { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .stage-bar:last-child { border-bottom: none; }
+  .stage-bar-name { font-size: 12px; color: var(--muted2); flex: 1; font-family: 'IBM Plex Mono', monospace; }
+  .stage-bar-track { width: 120px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+  .stage-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+  .stage-bar-count { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--text); min-width: 28px; text-align: right; }
 </style>
 </head>
 <body>
@@ -109,12 +129,7 @@
 </header>
 
 <div class="config-panel">
-  <h3>Настройки подключения</h3>
   <div class="config-grid">
-    <div class="field"><label>Access Token</label><input type="password" id="inp-token" placeholder="eyJ0eXAi..." /></div>
-    <div class="field"><label>Refresh Token</label><input type="password" id="inp-refresh" placeholder="def50200..." /></div>
-    <div class="field"><label>Client ID</label><input type="text" id="inp-client-id" placeholder="ba633893-..." /></div>
-    <div class="field"><label>Client Secret</label><input type="password" id="inp-client-secret" placeholder="Ul8cGsv..." /></div>
     <div class="field"><label>Начало периода</label><input type="date" id="inp-date-from" /></div>
     <div class="field"><label>Конец периода</label><input type="date" id="inp-date-to" /></div>
     <div class="field"><label>&nbsp;</label><button class="btn-save" onclick="saveConfig()">ЗАГРУЗИТЬ</button></div>
@@ -125,7 +140,6 @@
   <div class="error-msg" id="error-banner"></div>
   <div class="info-msg" id="info-banner"></div>
 
-  <!-- KPI -->
   <div class="kpi-row">
     <div class="kpi-card"><div class="kpi-label">В активной воронке</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">все сделки сейчас</div></div>
     <div class="kpi-card green"><div class="kpi-label">Новых за период</div><div class="kpi-value" id="kpi-new">—</div><div class="kpi-sub">Новостройки 2.0</div></div>
@@ -134,16 +148,15 @@
     <div class="kpi-card"><div class="kpi-label">Конверсия в работу</div><div class="kpi-value" id="kpi-conv">—</div><div class="kpi-sub">новые → квалиф.</div></div>
   </div>
 
-  <!-- АКТИВНАЯ ВОРОНКА -->
   <div class="section-title">Активная воронка — текущее состояние</div>
-  <div class="section-subtitle">Все лиды сейчас в работе у каждого брокера</div>
+  <div class="section-subtitle">Кликните на брокера для детального дашборда</div>
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
           <th>Брокер</th>
-          <th class="num">Всего</th>
-          <th class="num">Квалиф.</th>
+          <th class="num">Всего в воронке</th>
+          <th class="num">В работе (3+)</th>
           <th class="num">Встречи</th>
           <th class="num">Показы</th>
           <th class="num">Бронь</th>
@@ -157,9 +170,8 @@
     </table>
   </div>
 
-  <!-- НОВЫЕ ЛИДЫ ЗА ПЕРИОД -->
   <div class="section-title">Новые лиды — Новостройки 2.0 за период</div>
-  <div class="section-subtitle">Разбивка по брокерам и тегам: кто и как отработал новые заявки</div>
+  <div class="section-subtitle">Разбивка по брокерам и тегам</div>
   <div class="table-wrap">
     <table>
       <thead>
@@ -169,29 +181,24 @@
           <th>Источники (тег → кол-во)</th>
           <th class="num">До квалиф.</th>
           <th class="num">В работе</th>
-          <th class="num">Архив</th>
           <th class="num">Конверсия</th>
         </tr>
       </thead>
-      <tbody id="new-leads-tbody"><tr><td colspan="7" class="empty">Нет данных</td></tr></tbody>
+      <tbody id="new-leads-tbody"><tr><td colspan="6" class="empty">Нет данных</td></tr></tbody>
     </table>
   </div>
 
-  <!-- ДЕТАЛЬНЫЙ СПИСОК НОВЫХ ЛИДОВ -->
   <div class="section-title">Детальный список новых лидов</div>
   <div class="leads-filter" id="broker-filter"></div>
   <div class="table-wrap">
     <table>
       <thead>
-        <tr>
-          <th>Дата</th><th>Брокер</th><th>Тег / источник</th><th>ID</th><th>Название</th><th>Этап сейчас</th>
-        </tr>
+        <tr><th>Дата</th><th>Брокер</th><th>Тег / источник</th><th>ID</th><th>Название</th><th>Этап сейчас</th></tr>
       </thead>
       <tbody id="leads-tbody"><tr><td colspan="6" class="empty">Нет данных</td></tr></tbody>
     </table>
   </div>
 
-  <!-- ВОРОНКА + ИСТОЧНИКИ -->
   <div class="two-col">
     <div>
       <div class="section-title">Воронка (все брокеры)</div>
@@ -204,6 +211,20 @@
   </div>
 </main>
 
+<!-- BROKER DRILLDOWN PANEL -->
+<div class="dd-overlay" id="dd-overlay" onclick="closeDrilldown()"></div>
+<div class="dd-panel" id="dd-panel">
+  <div class="dd-header">
+    <div>
+      <div class="dd-name" id="dd-name">—</div>
+      <div class="dd-meta" id="dd-meta">—</div>
+    </div>
+    <button class="dd-close" onclick="closeDrilldown()">✕ ЗАКРЫТЬ</button>
+  </div>
+  <div class="dd-kpi" id="dd-kpi"></div>
+  <div class="dd-body" id="dd-body"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -211,239 +232,163 @@ let cfg = {};
 let allLeads = [], newLeads = [];
 let _lastUsers = {}, _lastStages = {};
 let currentBrokerFilter = 'all';
-const NOVOSTROI_PIPELINE = 'Новостройки 2.0';
+let _cache = { allLeads:[], newLeads:[], tasks:[], users:{}, stages:{} };
 
 function loadConfig() {
-  const saved = localStorage.getItem('amo_cfg_v2');
+  const saved = localStorage.getItem('amo_cfg_v3');
   if (saved) {
     cfg = JSON.parse(saved);
-    if (cfg.token) document.getElementById('inp-token').value = cfg.token;
-    if (cfg.refresh) document.getElementById('inp-refresh').value = cfg.refresh;
-    if (cfg.clientId) document.getElementById('inp-client-id').value = cfg.clientId;
-    if (cfg.clientSecret) document.getElementById('inp-client-secret').value = cfg.clientSecret;
   }
-  const now = new Date();
-  const day = now.getDay() || 7;
-  const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const now = new Date(), day = now.getDay()||7;
+  const mon = new Date(now); mon.setDate(now.getDate()-day+1);
+  const sun = new Date(mon); sun.setDate(mon.getDate()+6);
   const fmt = d => d.toISOString().split('T')[0];
   document.getElementById('inp-date-from').value = cfg.dateFrom || fmt(mon);
-  document.getElementById('inp-date-to').value = cfg.dateTo || fmt(sun);
-  if (cfg.token) showInfo('Токен загружен. Нажмите «Загрузить» для обновления данных.');
+  document.getElementById('inp-date-to').value   = cfg.dateTo   || fmt(sun);
 }
 
 function saveConfig() {
   cfg = {
-    token: document.getElementById('inp-token').value.trim(),
-    refresh: document.getElementById('inp-refresh').value.trim(),
-    clientId: document.getElementById('inp-client-id').value.trim(),
-    clientSecret: document.getElementById('inp-client-secret').value.trim(),
     dateFrom: document.getElementById('inp-date-from').value,
-    dateTo: document.getElementById('inp-date-to').value,
+    dateTo:   document.getElementById('inp-date-to').value,
   };
-  localStorage.setItem('amo_cfg_v2', JSON.stringify(cfg));
+  localStorage.setItem('amo_cfg_v3', JSON.stringify(cfg));
   loadAll();
 }
 
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show ' + type;
-  setTimeout(() => t.className = 'toast', 3500);
-}
-function showError(msg) {
-  document.getElementById('error-banner').style.display = 'block';
-  document.getElementById('error-banner').textContent = '⚠ ' + msg;
-  document.getElementById('info-banner').style.display = 'none';
-}
-function showInfo(msg) {
-  document.getElementById('info-banner').style.display = 'block';
-  document.getElementById('info-banner').textContent = msg;
-  document.getElementById('error-banner').style.display = 'none';
-}
-function hideMessages() {
-  document.getElementById('error-banner').style.display = 'none';
-  document.getElementById('info-banner').style.display = 'none';
-}
-function setStatus(s) { document.getElementById('status-dot').className = 'status-dot ' + s; }
+function showToast(msg,t=''){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+t;setTimeout(()=>el.className='toast',3500);}
+function showError(msg){document.getElementById('error-banner').style.display='block';document.getElementById('error-banner').textContent='⚠ '+msg;document.getElementById('info-banner').style.display='none';}
+function showInfo(msg){document.getElementById('info-banner').style.display='block';document.getElementById('info-banner').textContent=msg;document.getElementById('error-banner').style.display='none';}
+function hideMessages(){document.getElementById('error-banner').style.display='none';document.getElementById('info-banner').style.display='none';}
+function setStatus(s){document.getElementById('status-dot').className='status-dot '+s;}
 
 async function amoGet(path, params={}) {
-  const url = new URL('/api/proxy/' + path, window.location.origin);
-  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-  const res = await fetch(url.toString(), { headers: { 'X-Token': cfg.token } });
-  if (res.status === 401) {
-    if (cfg.refresh && cfg.clientId && cfg.clientSecret) {
-      const ok = await tryRefresh();
-      if (ok) return amoGet(path, params);
-    }
-    throw new Error('Токен истёк. Введите новый access token.');
-  }
+  const url = new URL('/api/proxy/'+path, window.location.origin);
+  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
+  const res = await fetch(url.toString());
   if (!res.ok) throw new Error(`AMO API ошибка ${res.status}`);
   return res.json();
 }
 
-async function tryRefresh() {
-  try {
-    const res = await fetch('/api/refresh', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: cfg.clientId, client_secret: cfg.clientSecret, refresh_token: cfg.refresh })
-    });
-    if (!res.ok) return false;
-    const data = await res.json();
-    if (data.access_token) {
-      cfg.token = data.access_token; cfg.refresh = data.refresh_token;
-      localStorage.setItem('amo_cfg_v2', JSON.stringify(cfg));
-      document.getElementById('inp-token').value = cfg.token;
-      document.getElementById('inp-refresh').value = cfg.refresh;
-      showToast('Токен обновлён автоматически', 'success');
-      return true;
-    }
-    return false;
-  } catch { return false; }
-}
-
 async function fetchAll(path, params={}) {
-  let page = 1, results = [];
-  while (true) {
-    const data = await amoGet(path, { ...params, limit: 250, page });
-    const items = data?._embedded?.leads || data?._embedded?.users || data?._embedded?.tasks || data?._embedded?.pipelines || [];
-    if (!items.length) break;
-    results = results.concat(items);
-    if (items.length < 250) break;
+  let page=1, results=[];
+  while(true){
+    const data = await amoGet(path, {...params, limit:250, page});
+    const items = data?._embedded?.leads||data?._embedded?.users||data?._embedded?.tasks||data?._embedded?.pipelines||[];
+    if(!items.length) break;
+    results=results.concat(items);
+    if(items.length<250) break;
     page++;
   }
   return results;
 }
 
-function toTs(dateStr) { return Math.floor(new Date(dateStr).getTime() / 1000); }
+function toTs(d){return Math.floor(new Date(d).getTime()/1000);}
 
 async function loadAll() {
-  if (!cfg.token) { showError('Введите Access Token и нажмите «Загрузить»'); return; }
-  hideMessages();
-  setStatus('loading');
-  const btn = document.getElementById('btn-refresh');
-  btn.disabled = true; btn.textContent = '↻ ЗАГРУЗКА...';
+  hideMessages(); setStatus('loading');
+  const btn=document.getElementById('btn-refresh');
+  btn.disabled=true; btn.textContent='↻ ЗАГРУЗКА...';
 
   try {
-    // Пользователи Клуба чемпионов
-    const groupRes = await fetch('/api/group_users', { headers: { 'X-Token': cfg.token } });
+    // Получаем актуальный токен с сервера
+    const tokenRes = await fetch('/api/token');
+    const tokenData = await tokenRes.json();
+    if (!tokenData.token) throw new Error('Токен не настроен на сервере. Задайте AMO_ACCESS_TOKEN.');
+    cfg.token = tokenData.token;
+    const groupRes = await fetch('/api/group_users');
     const groupData = await groupRes.json();
-    const filteredUserIds = new Set((groupData.users || []).map(u => u.id));
+    const filteredUserIds = new Set((groupData.users||[]).map(u=>u.id));
 
     const usersRaw = await fetchAll('users');
-    const users = {};
-    usersRaw.forEach(u => users[u.id] = u.name);
+    const users={};
+    usersRaw.forEach(u=>users[u.id]=u.name);
 
-    // Воронки и этапы
     const pipelinesRaw = await fetchAll('leads/pipelines');
-    const stages = {}, pipelineNames = {};
-    pipelinesRaw.forEach(p => {
-      pipelineNames[p.id] = p.name;
-      (p._embedded?.statuses || []).forEach(s => stages[s.id] = { name: s.name, pipeline: p.name, pipelineId: p.id });
-    });
+    const stages={};
+    pipelinesRaw.forEach(p=>(p._embedded?.statuses||[]).forEach(s=>stages[s.id]={name:s.name,pipeline:p.name,pipelineId:p.id}));
 
-    // Найдём ID воронки Новостройки 2.0
-    const novostroi = pipelinesRaw.find(p => p.name && p.name.includes('Новостройки 2.0'));
-    const novostroiId = novostroi ? novostroi.id : null;
+    const novostroi = pipelinesRaw.find(p=>p.name&&p.name.includes('Новостройки 2.0'));
+    const novostroiId = novostroi?novostroi.id:null;
 
-    // Все активные лиды (фильтруем по клубу)
-    allLeads = (await fetchAll('leads', { 'with': 'tags' }))
-      .filter(l => filteredUserIds.has(l.responsible_user_id) && (!novostroiId || l.pipeline_id === novostroiId));
+    allLeads = (await fetchAll('leads',{'with':'tags'}))
+      .filter(l=>filteredUserIds.has(l.responsible_user_id)&&(!novostroiId||l.pipeline_id===novostroiId));
 
-    // Новые лиды за период в воронке Новостройки 2.0
-    const dateFrom = toTs(cfg.dateFrom || document.getElementById('inp-date-from').value);
-    const dateTo = toTs(cfg.dateTo || document.getElementById('inp-date-to').value) + 86399;
+    const dateFrom=toTs(cfg.dateFrom||document.getElementById('inp-date-from').value);
+    const dateTo=toTs(cfg.dateTo||document.getElementById('inp-date-to').value)+86399;
+    const newLeadsAll = await fetchAll('leads',{'filter[created_at][from]':dateFrom,'filter[created_at][to]':dateTo,'with':'tags'});
+    newLeads = newLeadsAll.filter(l=>filteredUserIds.has(l.responsible_user_id)&&(!novostroiId||l.pipeline_id===novostroiId));
 
-    let newLeadsAll = await fetchAll('leads', {
-      'filter[created_at][from]': dateFrom,
-      'filter[created_at][to]': dateTo,
-      'with': 'tags'
-    });
+    const allLeadIds = new Set(allLeads.map(l=>l.id));
+    const tasksRaw = await fetchAll('tasks',{'filter[is_completed]':0});
+    const tasks = tasksRaw.filter(t=>t.entity_type==='leads'&&allLeadIds.has(t.entity_id));
 
-    // Фильтр: только клуб + только Новостройки 2.0
-    newLeads = newLeadsAll.filter(l =>
-      filteredUserIds.has(l.responsible_user_id) &&
-      (!novostroiId || l.pipeline_id === novostroiId)
-    );
+    _cache = {allLeads, newLeads, tasks, users, stages};
+    _lastUsers=users; _lastStages=stages;
+    renderDashboard(allLeads,newLeads,tasks,users,stages);
+    setStatus('ok'); showToast('Данные обновлены','success');
 
-    // Задачи — только по лидам из нашей воронки
-    const allLeadIds = new Set(allLeads.map(l => l.id));
-    const tasksRaw = await fetchAll('tasks', { 'filter[is_completed]': 0 });
-    const tasks = tasksRaw.filter(t => t.entity_type === 'leads' && allLeadIds.has(t.entity_id));
-
-    _lastUsers = users; _lastStages = stages;
-    renderDashboard(allLeads, newLeads, tasks, users, stages);
-    setStatus('ok');
-    showToast('Данные обновлены', 'success');
-
-    const from = cfg.dateFrom || document.getElementById('inp-date-from').value;
-    const to = cfg.dateTo || document.getElementById('inp-date-to').value;
-    document.getElementById('period-label').textContent = `${from} — ${to}`;
-  } catch(e) {
-    setStatus('err');
-    showError(e.message);
-    showToast(e.message, 'error');
-    console.error(e);
-  } finally {
-    btn.disabled = false; btn.textContent = '↻ ОБНОВИТЬ';
-  }
+    const from=cfg.dateFrom||document.getElementById('inp-date-from').value;
+    const to=cfg.dateTo||document.getElementById('inp-date-to').value;
+    document.getElementById('period-label').textContent=`${from} — ${to}`;
+  } catch(e){setStatus('err');showError(e.message);showToast(e.message,'error');console.error(e);}
+  finally{btn.disabled=false;btn.textContent='↻ ОБНОВИТЬ';}
 }
 
-function renderDashboard(leads, newL, tasks, users, stages) {
-  const now = Math.floor(Date.now()/1000);
-  const overdueTasks = tasks.filter(t => t.complete_till && t.complete_till < now);
-  const overdueByUser = {};
-  overdueTasks.forEach(t => overdueByUser[t.responsible_user_id] = (overdueByUser[t.responsible_user_id]||0)+1);
-  const leadsWithTasks = new Set(tasks.map(t => t.entity_id));
+function renderDashboard(leads,newL,tasks,users,stages) {
+  const now=Math.floor(Date.now()/1000);
+  const overdueTasks=tasks.filter(t=>t.complete_till&&t.complete_till<now);
+  const overdueByUser={};
+  overdueTasks.forEach(t=>overdueByUser[t.responsible_user_id]=(overdueByUser[t.responsible_user_id]||0)+1);
+  const leadsWithTasks=new Set(tasks.map(t=>t.entity_id));
 
-  // Сгруппировать по брокеру
-  const brokerMap = {};
-  leads.forEach(l => {
-    const uid = l.responsible_user_id;
-    const name = users[uid] || `ID:${uid}`;
-    const stageInfo = stages[l.status_id] || { name: '—', pipeline: '—' };
-    if (!brokerMap[uid]) brokerMap[uid] = { name, uid, leads: [], stageCounts: {}, newLeads: [] };
-    // Активная воронка = только этапы 3-9
-    if (stageInfo.name.match(/^[3-9]\./)) {
-      brokerMap[uid].leads.push(l);
-      brokerMap[uid].stageCounts[stageInfo.name] = (brokerMap[uid].stageCounts[stageInfo.name]||0)+1;
+  // brokerMap: allLeads — все лиды (для "Всего в воронке"), leads — только 3+ (для "В работе")
+  const brokerMap={};
+  leads.forEach(l=>{
+    const uid=l.responsible_user_id, name=users[uid]||`ID:${uid}`;
+    const sname=stages[l.status_id]?.name||'';
+    if(!brokerMap[uid]) brokerMap[uid]={name,uid,allInFunnel:[],activeLeads:[],stageCounts:{},newLeads:[]};
+    brokerMap[uid].allInFunnel.push(l); // все лиды в воронке
+    if(sname.match(/^[3-9]\./)){
+      brokerMap[uid].activeLeads.push(l);
+      brokerMap[uid].stageCounts[sname]=(brokerMap[uid].stageCounts[sname]||0)+1;
     }
   });
-  newL.forEach(l => {
-    const uid = l.responsible_user_id;
-    if (!brokerMap[uid]) brokerMap[uid] = { name: users[uid]||`ID:${uid}`, uid, leads: [], stageCounts: {}, newLeads: [] };
+  newL.forEach(l=>{
+    const uid=l.responsible_user_id;
+    if(!brokerMap[uid]) brokerMap[uid]={name:users[uid]||`ID:${uid}`,uid,allInFunnel:[],activeLeads:[],stageCounts:{},newLeads:[]};
     brokerMap[uid].newLeads.push(l);
   });
 
-  // KPI
-  let totalQual = 0;
-  leads.forEach(l => { if ((stages[l.status_id]?.name||'').match(/^[3-9]\./)) totalQual++; });
-  const totalConv = newL.length > 0 ? Math.round(totalQual / newL.length * 100) : 0;
+  let totalQual=0;
+  leads.forEach(l=>{if((stages[l.status_id]?.name||'').match(/^[3-9]\./))totalQual++;});
+  const totalConv=newL.length>0?Math.round(totalQual/newL.length*100):0;
+  const activeLeads=leads.filter(l=>(stages[l.status_id]?.name||'').match(/^[3-9]\./));
+  document.getElementById('kpi-total').textContent=activeLeads.length;
+  document.getElementById('kpi-new').textContent=newL.length;
+  document.getElementById('kpi-qual').textContent=totalQual;
+  document.getElementById('kpi-overdue').textContent=overdueTasks.length;
+  document.getElementById('kpi-conv').textContent=totalConv+'%';
 
-  const activeLeads = leads.filter(l => (stages[l.status_id]?.name||'').match(/^[3-9]\./));
-  document.getElementById('kpi-total').textContent = activeLeads.length;
-  document.getElementById('kpi-new').textContent = newL.length;
-  document.getElementById('kpi-qual').textContent = totalQual;
-  document.getElementById('kpi-overdue').textContent = overdueTasks.length;
-  document.getElementById('kpi-conv').textContent = totalConv + '%';
+  const brokers=Object.values(brokerMap).sort((a,b)=>b.allInFunnel.length-a.allInFunnel.length);
 
-  // ТАБЛИЦА 1: Активная воронка
-  const brokers = Object.values(brokerMap).sort((a,b) => b.leads.length - a.leads.length);
-  document.getElementById('funnel-tbody').innerHTML = brokers.map(b => {
-    const sc = b.stageCounts;
-    const qual = Object.entries(sc).filter(([s])=>s.match(/^[3-9]\./)).reduce((a,[,v])=>a+v,0);
-    const meeting = (sc['4. Встреча назначена']||0)+(sc['5. Встреча проведена']||0);
-    const show = (sc['6. Показ назначен']||0)+(sc['7. Показ проведен']||0);
-    const book = sc['8. Бронь объекта']||0;
-    const ddu = sc['9. Подписание ДДУ']||0;
-    const overdue = overdueByUser[b.uid]||0;
-    const noTask = b.leads.filter(l=>!leadsWithTasks.has(l.id)).length;
-    const conv = b.newLeads.length > 0 ? Math.round(qual/b.newLeads.length*100) : '—';
-    const convNum = typeof conv === 'number' ? conv : 0;
-    const odClass = overdue > 10 ? 'badge-danger' : overdue > 3 ? 'badge-warn' : '';
+  // Таблица 1
+  document.getElementById('funnel-tbody').innerHTML=brokers.map(b=>{
+    const sc=b.stageCounts;
+    const inWork=b.activeLeads.length; // квалиф + выше
+    const meeting=(sc['4. Встреча назначена']||0)+(sc['5. Встреча проведена']||0);
+    const show=(sc['6. Показ назначен']||0)+(sc['7. Показ проведен']||0);
+    const book=sc['8. Бронь объекта']||0;
+    const ddu=sc['9. Подписание ДДУ']||0;
+    const overdue=overdueByUser[b.uid]||0;
+    const noTask=b.activeLeads.filter(l=>!leadsWithTasks.has(l.id)).length;
+    const conv=b.newLeads.length>0?Math.round(inWork/b.newLeads.length*100):'—';
+    const convNum=typeof conv==='number'?conv:0;
+    const odClass=overdue>10?'badge-danger':overdue>3?'badge-warn':'';
     return `<tr>
-      <td class="broker-name">${b.name}</td>
-      <td class="num">${b.leads.length}</td>
-      <td class="num">${qual}</td>
+      <td class="broker-name"><span class="broker-link" onclick="openBroker(${b.uid})">${b.name}</span></td>
+      <td class="num">${b.allInFunnel.length}</td>
+      <td class="num">${inWork}</td>
       <td class="num">${meeting}</td>
       <td class="num">${show}</td>
       <td class="num">${book}</td>
@@ -457,39 +402,24 @@ function renderDashboard(leads, newL, tasks, users, stages) {
         </div>
       </td>
     </tr>`;
-  }).join('') || '<tr><td colspan="10" class="empty">Нет данных</td></tr>';
+  }).join('')||'<tr><td colspan="10" class="empty">Нет данных</td></tr>';
 
-  // ТАБЛИЦА 2: Новые лиды с разбивкой по тегам
-  document.getElementById('new-leads-tbody').innerHTML = brokers.map(b => {
-    const nl = b.newLeads;
-    if (!nl.length && !b.leads.length) return '';
-
-    // Теги
-    const tagMap = {};
-    nl.forEach(l => {
-      const tags = l._embedded?.tags||[];
-      const src = tags.length ? tags.map(t=>t.name).join('+') : 'Без тега';
-      tagMap[src] = (tagMap[src]||0)+1;
-    });
-    const tagPills = Object.entries(tagMap).sort((a,b)=>b[1]-a[1])
-      .map(([t,c]) => `<span class="tag-pill">${t}<span class="tag-count">${c}</span></span>`).join('');
-
-    // Этапы новых лидов
-    const beforeQual = nl.filter(l => {
-      const s = stages[l.status_id]?.name||'';
-      return !s.match(/^[3-9]\./) && !s.includes('Архив');
-    }).length;
-    const inWork = nl.filter(l => (stages[l.status_id]?.name||'').match(/^[3-9]\./)).length;
-    const archived = nl.filter(l => (stages[l.status_id]?.name||'').includes('Архив')).length;
-    const conv = nl.length > 0 ? Math.round(inWork/nl.length*100) : 0;
-
+  // Таблица 2 — убран столбец Архив
+  document.getElementById('new-leads-tbody').innerHTML=brokers.map(b=>{
+    const nl=b.newLeads;
+    if(!nl.length&&!b.allInFunnel.length) return '';
+    const tagMap={};
+    nl.forEach(l=>{const tags=l._embedded?.tags||[];const src=tags.length?tags.map(t=>t.name).join('+'):'Без тега';tagMap[src]=(tagMap[src]||0)+1;});
+    const tagPills=Object.entries(tagMap).sort((a,b)=>b[1]-a[1]).map(([t,c])=>`<span class="tag-pill">${t}<span class="tag-count">${c}</span></span>`).join('');
+    const beforeQual=nl.filter(l=>!(stages[l.status_id]?.name||'').match(/^[3-9]\./)).length;
+    const inWork=nl.filter(l=>(stages[l.status_id]?.name||'').match(/^[3-9]\./)).length;
+    const conv=nl.length>0?Math.round(inWork/nl.length*100):0;
     return `<tr>
-      <td class="broker-name">${b.name}</td>
+      <td class="broker-name"><span class="broker-link" onclick="openBroker(${b.uid})">${b.name}</span></td>
       <td class="num"><strong style="font-family:'Bebas Neue',sans-serif;font-size:20px">${nl.length}</strong></td>
-      <td><div class="tag-pills">${tagPills || '<span style="color:var(--muted);font-size:11px">—</span>'}</div></td>
+      <td><div class="tag-pills">${tagPills||'<span style="color:var(--muted);font-size:11px">—</span>'}</div></td>
       <td class="num"><span class="badge badge-muted">${beforeQual}</span></td>
       <td class="num"><span class="badge badge-ok">${inWork}</span></td>
-      <td class="num"><span class="badge ${archived>0?'badge-danger':''}">${archived}</span></td>
       <td class="num">
         <div class="conv-bar">
           <span style="font-size:12px">${conv}%</span>
@@ -497,63 +427,58 @@ function renderDashboard(leads, newL, tasks, users, stages) {
         </div>
       </td>
     </tr>`;
-  }).join('') || '<tr><td colspan="7" class="empty">Нет новых лидов за период</td></tr>';
+  }).join('')||'<tr><td colspan="6" class="empty">Нет новых лидов за период</td></tr>';
 
-  // Воронка — только этапы 3-9 Новостройки 2.0
-  const stageTotals = {};
-  leads.forEach(l => { const s = stages[l.status_id]?.name||''; if(s.match(/^[3-9]\./)) stageTotals[s]=(stageTotals[s]||0)+1; });
-  const maxVal = Math.max(...Object.values(stageTotals), 1);
-  const order = ['1. Новая заявка','2. Взят в работу','~ НЕ дозвонился','3. Квалифицирован','4. Встреча назначена','5. Встреча проведена','6. Показ назначен','7. Показ проведен','8. Бронь объекта','9. Подписание ДДУ','~ Архив'];
-  const funnelKeys = order.filter(s=>stageTotals[s]).concat(Object.keys(stageTotals).filter(s=>!order.includes(s)&&stageTotals[s]));
-  document.getElementById('funnel-wrap').innerHTML = funnelKeys.map(s=>`
+  // Воронка
+  const stageTotals={};
+  leads.forEach(l=>{const s=stages[l.status_id]?.name||'';if(s.match(/^[3-9]\./))stageTotals[s]=(stageTotals[s]||0)+1;});
+  const maxVal=Math.max(...Object.values(stageTotals),1);
+  const order=['3. Квалифицирован','4. Встреча назначена','5. Встреча проведена','6. Показ назначен','7. Показ проведен','8. Бронь объекта','9. Подписание ДДУ'];
+  const funnelKeys=order.filter(s=>stageTotals[s]).concat(Object.keys(stageTotals).filter(s=>!order.includes(s)&&stageTotals[s]));
+  document.getElementById('funnel-wrap').innerHTML=funnelKeys.map(s=>`
     <div class="funnel-row">
       <div class="funnel-stage">${s}</div>
       <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.round(stageTotals[s]/maxVal*100)}%"></div></div>
       <div class="funnel-count">${stageTotals[s]}</div>
-    </div>`).join('') || '<div class="empty">Нет данных</div>';
+    </div>`).join('')||'<div class="empty">Нет данных</div>';
 
   // Источники
-  const srcTotals = {};
-  newL.forEach(l => {
-    const tags = l._embedded?.tags||[];
-    const src = tags.length ? tags.map(t=>t.name).join(', ') : 'Без тега';
-    srcTotals[src]=(srcTotals[src]||0)+1;
-  });
-  const srcMax = Math.max(...Object.values(srcTotals),1);
-  document.getElementById('sources-wrap').innerHTML = Object.entries(srcTotals).sort((a,b)=>b[1]-a[1]).map(([s,c])=>`
+  const srcTotals={};
+  newL.forEach(l=>{const tags=l._embedded?.tags||[];const src=tags.length?tags.map(t=>t.name).join(', '):'Без тега';srcTotals[src]=(srcTotals[src]||0)+1;});
+  const srcMax=Math.max(...Object.values(srcTotals),1);
+  document.getElementById('sources-wrap').innerHTML=Object.entries(srcTotals).sort((a,b)=>b[1]-a[1]).map(([s,c])=>`
     <div class="funnel-row">
       <div class="funnel-stage">${s}</div>
       <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.round(c/srcMax*100)}%;background:var(--accent2)"></div></div>
       <div class="funnel-count">${c}</div>
-    </div>`).join('') || '<div class="empty">Нет данных</div>';
+    </div>`).join('')||'<div class="empty">Нет данных</div>';
 
-  // Фильтр и детальный список
-  const brokerNames = [...new Set(newL.map(l=>users[l.responsible_user_id]||`ID:${l.responsible_user_id}`))].sort();
-  document.getElementById('broker-filter').innerHTML =
-    `<button class="filter-btn active" onclick="filterLeads('all',event)">Все</button>` +
+  const brokerNames=[...new Set(newL.map(l=>users[l.responsible_user_id]||`ID:${l.responsible_user_id}`))].sort();
+  document.getElementById('broker-filter').innerHTML=
+    `<button class="filter-btn active" onclick="filterLeads('all',event)">Все</button>`+
     brokerNames.map(n=>`<button class="filter-btn" onclick="filterLeads('${n}',event)">${n}</button>`).join('');
   renderLeads(newL);
 }
 
-function filterLeads(broker, e) {
-  currentBrokerFilter = broker;
+function filterLeads(broker,e){
+  currentBrokerFilter=broker;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   if(e) e.target.classList.add('active');
   renderLeads(newLeads);
 }
 
-function renderLeads(leads) {
-  const u = _lastUsers, s = _lastStages;
-  const filtered = currentBrokerFilter==='all' ? leads : leads.filter(l=>(u[l.responsible_user_id]||'')=== currentBrokerFilter);
-  const tbody = document.getElementById('leads-tbody');
-  if (!filtered.length) { tbody.innerHTML='<tr><td colspan="6" class="empty">Нет лидов</td></tr>'; return; }
-  tbody.innerHTML = filtered.sort((a,b)=>b.created_at-a.created_at).slice(0,200).map(l => {
-    const d = new Date(l.created_at*1000);
-    const ds = d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-    const broker = u[l.responsible_user_id]||`ID:${l.responsible_user_id}`;
-    const tags = l._embedded?.tags?.map(t=>t.name).join(', ')||'—';
-    const stageInfo = s[l.status_id]||{name:'—'};
-    const sc = stageInfo.name.match(/^[3-9]\./) ? 'badge-ok' : stageInfo.name.includes('Архив') ? 'badge-danger' : 'badge-muted';
+function renderLeads(leads){
+  const u=_lastUsers, s=_lastStages;
+  const filtered=currentBrokerFilter==='all'?leads:leads.filter(l=>(u[l.responsible_user_id]||'')===currentBrokerFilter);
+  const tbody=document.getElementById('leads-tbody');
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="6" class="empty">Нет лидов</td></tr>';return;}
+  tbody.innerHTML=filtered.sort((a,b)=>b.created_at-a.created_at).slice(0,200).map(l=>{
+    const d=new Date(l.created_at*1000);
+    const ds=d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    const broker=u[l.responsible_user_id]||`ID:${l.responsible_user_id}`;
+    const tags=l._embedded?.tags?.map(t=>t.name).join(', ')||'—';
+    const sname=s[l.status_id]?.name||'—';
+    const sc=sname.match(/^[3-9]\./)?'badge-ok':sname.includes('Архив')?'badge-danger':'badge-muted';
     return `<tr>
       <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted2)">${ds}</td>
       <td style="font-size:12px">${broker}</td>
@@ -562,9 +487,89 @@ function renderLeads(leads) {
         <a href="https://c21pp.amocrm.ru/leads/detail/${l.id}" target="_blank" style="color:var(--accent);text-decoration:none">${l.id}</a>
       </td>
       <td style="font-size:12px">${l.name||'—'}</td>
-      <td><span class="badge ${sc}" style="font-size:10px">${stageInfo.name}</span></td>
+      <td><span class="badge ${sc}" style="font-size:10px">${sname}</span></td>
     </tr>`;
   }).join('');
+}
+
+// ── BROKER DRILLDOWN ────────────────────────────────────────────────────────
+function openBroker(uid) {
+  const {allLeads, newLeads, tasks, users, stages} = _cache;
+  const name = users[uid]||`ID:${uid}`;
+
+  // Все лиды брокера в воронке
+  const bAll    = allLeads.filter(l=>l.responsible_user_id===uid);
+  const bActive = bAll.filter(l=>(stages[l.status_id]?.name||'').match(/^[3-9]\./));
+  const bNew    = newLeads.filter(l=>l.responsible_user_id===uid);
+  const bLeadIds = new Set(bAll.map(l=>l.id));
+  const bTasks  = tasks.filter(t=>bLeadIds.has(t.entity_id));
+  const now     = Math.floor(Date.now()/1000);
+  const bOverdue = bTasks.filter(t=>t.complete_till&&t.complete_till<now);
+  const bNoTask  = bActive.filter(l=>!new Set(bTasks.map(t=>t.entity_id)).has(l.id));
+  const conv     = bNew.length>0?Math.round(bActive.length/bNew.length*100):0;
+
+  document.getElementById('dd-name').textContent=name;
+  document.getElementById('dd-meta').textContent=`${bAll.length} всего в воронке · ${bNew.length} новых за период`;
+
+  // KPI
+  document.getElementById('dd-kpi').innerHTML=`
+    <div class="kpi-card"><div class="kpi-label">Всего в воронке</div><div class="kpi-value">${bAll.length}</div><div class="kpi-sub">все лиды сейчас</div></div>
+    <div class="kpi-card orange"><div class="kpi-label">В работе (3+)</div><div class="kpi-value">${bActive.length}</div><div class="kpi-sub">квалиф. и выше</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Просрочено</div><div class="kpi-value">${bOverdue.length}</div><div class="kpi-sub">задач</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Конверсия</div><div class="kpi-value">${conv}%</div><div class="kpi-sub">новые → в работе</div></div>`;
+
+  // Распределение по этапам
+  const stageCounts={};
+  bAll.forEach(l=>{const s=stages[l.status_id]?.name||'—';stageCounts[s]=(stageCounts[s]||0)+1;});
+  const maxSC=Math.max(...Object.values(stageCounts),1);
+  const stageOrder=['1. Новая заявка','2. Взят в работу','~ НЕ дозвонился','3. Квалифицирован','4. Встреча назначена','5. Встреча проведена','6. Показ назначен','7. Показ проведен','8. Бронь объекта','9. Подписание ДДУ'];
+  const stageKeys=stageOrder.filter(s=>stageCounts[s]).concat(Object.keys(stageCounts).filter(s=>!stageOrder.includes(s)&&stageCounts[s]));
+  const stagesHtml=stageKeys.map(s=>`
+    <div class="stage-bar">
+      <div class="stage-bar-name">${s}</div>
+      <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${Math.round(stageCounts[s]/maxSC*100)}%"></div></div>
+      <div class="stage-bar-count">${stageCounts[s]}</div>
+    </div>`).join('')||'<div class="empty">Нет данных</div>';
+
+  // Новые лиды за период
+  const leadsHtml=bNew.sort((a,b)=>b.created_at-a.created_at).slice(0,100).map(l=>{
+    const d=new Date(l.created_at*1000);
+    const ds=d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    const tags=l._embedded?.tags?.map(t=>t.name).join(', ')||'—';
+    const sname=stages[l.status_id]?.name||'—';
+    const sc=sname.match(/^[3-9]\./)?'badge-ok':sname.includes('Архив')?'badge-danger':'badge-muted';
+    return `<tr>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted2)">${ds}</td>
+      <td style="color:var(--muted2);font-size:11px">${tags}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px"><a href="https://c21pp.amocrm.ru/leads/detail/${l.id}" target="_blank" style="color:var(--accent);text-decoration:none">${l.id}</a></td>
+      <td style="font-size:12px">${l.name||'—'}</td>
+      <td><span class="badge ${sc}" style="font-size:10px">${sname}</span></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5" class="empty">Нет новых лидов за период</td></tr>';
+
+  document.getElementById('dd-body').innerHTML=`
+    <div class="section-title">Распределение по этапам</div>
+    <div style="margin-bottom:28px">${stagesHtml}</div>
+
+    <div class="section-title">Новые лиды за период</div>
+    <div class="table-wrap" style="margin-bottom:0">
+      <table style="min-width:500px">
+        <thead><tr>
+          <th>Дата</th><th>Тег</th><th>ID</th><th>Название</th><th>Этап сейчас</th>
+        </tr></thead>
+        <tbody>${leadsHtml}</tbody>
+      </table>
+    </div>`;
+
+  document.getElementById('dd-overlay').classList.add('open');
+  document.getElementById('dd-panel').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeDrilldown(){
+  document.getElementById('dd-overlay').classList.remove('open');
+  document.getElementById('dd-panel').classList.remove('open');
+  document.body.style.overflow='';
 }
 
 loadConfig();
