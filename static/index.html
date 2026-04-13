@@ -342,16 +342,29 @@ function renderDashboard(leads,newL,tasks,users,stages) {
   overdueTasks.forEach(t=>overdueByUser[t.responsible_user_id]=(overdueByUser[t.responsible_user_id]||0)+1);
   const leadsWithTasks=new Set(tasks.map(t=>t.entity_id));
 
-  // brokerMap: allLeads — все лиды (для "Всего в воронке"), leads — только 3+ (для "В работе")
+  // ID этапов воронки НОВОСТРОЙКИ 2.0 (pipeline_id: 10391694)
+  const S = {
+    QUAL:    82143450, // 3. Квалифицирован
+    MEET1:   82143454, // 4. Встреча назначена
+    MEET2:   82143458, // 5. Встреча проведена
+    SHOW1:   82143462, // 6. Показ назначен
+    SHOW2:   83396946, // 7. Показ проведен
+    BOOK:    82143466, // 8. Бронь ОБЪЕКТА
+    DDU:     82143470, // 9. ПОДПИСАНИЕ ДДУ
+  };
+  const ACTIVE_IDS = new Set(Object.values(S));
+  const isActive = sid => ACTIVE_IDS.has(sid);
+  const isQual   = sid => ACTIVE_IDS.has(sid); // 3+ это и есть activeLeads
+
+  // brokerMap
   const brokerMap={};
   leads.forEach(l=>{
     const uid=l.responsible_user_id, name=users[uid]||`ID:${uid}`;
-    const sname=stages[l.status_id]?.name||'';
     if(!brokerMap[uid]) brokerMap[uid]={name,uid,allInFunnel:[],activeLeads:[],stageCounts:{},newLeads:[]};
-    brokerMap[uid].allInFunnel.push(l); // все лиды в воронке
-    if(sname.match(/^[3-9]\./)){
+    brokerMap[uid].allInFunnel.push(l);
+    if(isActive(l.status_id)){
       brokerMap[uid].activeLeads.push(l);
-      brokerMap[uid].stageCounts[sname]=(brokerMap[uid].stageCounts[sname]||0)+1;
+      brokerMap[uid].stageCounts[l.status_id]=(brokerMap[uid].stageCounts[l.status_id]||0)+1;
     }
   });
   newL.forEach(l=>{
@@ -361,9 +374,9 @@ function renderDashboard(leads,newL,tasks,users,stages) {
   });
 
   let totalQual=0;
-  leads.forEach(l=>{if((stages[l.status_id]?.name||'').match(/^[3-9]\./))totalQual++;});
+  leads.forEach(l=>{if(isActive(l.status_id))totalQual++;});
   const totalConv=newL.length>0?Math.round(totalQual/newL.length*100):0;
-  const activeLeads=leads.filter(l=>(stages[l.status_id]?.name||'').match(/^[3-9]\./));
+  const activeLeads=leads.filter(l=>isActive(l.status_id));
   document.getElementById('kpi-total').textContent=activeLeads.length;
   document.getElementById('kpi-new').textContent=newL.length;
   document.getElementById('kpi-qual').textContent=totalQual;
@@ -375,11 +388,11 @@ function renderDashboard(leads,newL,tasks,users,stages) {
   // Таблица 1
   document.getElementById('funnel-tbody').innerHTML=brokers.map(b=>{
     const sc=b.stageCounts;
-    const inWork=b.activeLeads.length; // квалиф + выше
-    const meeting=(sc['4. Встреча назначена']||0)+(sc['5. Встреча проведена']||0);
-    const show=(sc['6. Показ назначен']||0)+(sc['7. Показ проведен']||0);
-    const book=sc['8. Бронь объекта']||0;
-    const ddu=sc['9. Подписание ДДУ']||0;
+    const inWork=b.activeLeads.length;
+    const meeting=(sc[S.MEET1]||0)+(sc[S.MEET2]||0);
+    const show=(sc[S.SHOW1]||0)+(sc[S.SHOW2]||0);
+    const book=sc[S.BOOK]||0;
+    const ddu=sc[S.DDU]||0;
     const overdue=overdueByUser[b.uid]||0;
     const noTask=b.activeLeads.filter(l=>!leadsWithTasks.has(l.id)).length;
     const conv=b.newLeads.length>0?Math.round(inWork/b.newLeads.length*100):'—';
@@ -411,8 +424,8 @@ function renderDashboard(leads,newL,tasks,users,stages) {
     const tagMap={};
     nl.forEach(l=>{const tags=l._embedded?.tags||[];const src=tags.length?tags.map(t=>t.name).join('+'):'Без тега';tagMap[src]=(tagMap[src]||0)+1;});
     const tagPills=Object.entries(tagMap).sort((a,b)=>b[1]-a[1]).map(([t,c])=>`<span class="tag-pill">${t}<span class="tag-count">${c}</span></span>`).join('');
-    const beforeQual=nl.filter(l=>!(stages[l.status_id]?.name||'').match(/^[3-9]\./)).length;
-    const inWork=nl.filter(l=>(stages[l.status_id]?.name||'').match(/^[3-9]\./)).length;
+    const beforeQual=nl.filter(l=>!isActive(l.status_id)).length;
+    const inWork=nl.filter(l=>isActive(l.status_id)).length;
     const conv=nl.length>0?Math.round(inWork/nl.length*100):0;
     return `<tr>
       <td class="broker-name"><span class="broker-link" onclick="openBroker(${b.uid})">${b.name}</span></td>
@@ -429,17 +442,26 @@ function renderDashboard(leads,newL,tasks,users,stages) {
     </tr>`;
   }).join('')||'<tr><td colspan="6" class="empty">Нет новых лидов за период</td></tr>';
 
-  // Воронка
+  // Воронка — по ID этапов с правильными названиями
+  const STAGE_NAMES = {
+    82143450: '3. Квалифицирован',
+    82143454: '4. Встреча назначена',
+    82143458: '5. Встреча проведена',
+    82143462: '6. Показ назначен',
+    83396946: '7. Показ проведен',
+    82143466: '8. Бронь объекта',
+    82143470: '9. Подписание ДДУ',
+  };
   const stageTotals={};
-  leads.forEach(l=>{const s=stages[l.status_id]?.name||'';if(s.match(/^[3-9]\./))stageTotals[s]=(stageTotals[s]||0)+1;});
+  leads.forEach(l=>{if(isActive(l.status_id))stageTotals[l.status_id]=(stageTotals[l.status_id]||0)+1;});
   const maxVal=Math.max(...Object.values(stageTotals),1);
-  const order=['3. Квалифицирован','4. Встреча назначена','5. Встреча проведена','6. Показ назначен','7. Показ проведен','8. Бронь объекта','9. Подписание ДДУ'];
-  const funnelKeys=order.filter(s=>stageTotals[s]).concat(Object.keys(stageTotals).filter(s=>!order.includes(s)&&stageTotals[s]));
-  document.getElementById('funnel-wrap').innerHTML=funnelKeys.map(s=>`
+  const stageOrder=[82143450,82143454,82143458,82143462,83396946,82143466,82143470];
+  const funnelKeys=stageOrder.filter(id=>stageTotals[id]);
+  document.getElementById('funnel-wrap').innerHTML=funnelKeys.map(id=>`
     <div class="funnel-row">
-      <div class="funnel-stage">${s}</div>
-      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.round(stageTotals[s]/maxVal*100)}%"></div></div>
-      <div class="funnel-count">${stageTotals[s]}</div>
+      <div class="funnel-stage">${STAGE_NAMES[id]}</div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.round(stageTotals[id]/maxVal*100)}%"></div></div>
+      <div class="funnel-count">${stageTotals[id]}</div>
     </div>`).join('')||'<div class="empty">Нет данных</div>';
 
   // Источники
@@ -496,48 +518,51 @@ function renderLeads(leads){
 function openBroker(uid) {
   const {allLeads, newLeads, tasks, users, stages} = _cache;
   const name = users[uid]||`ID:${uid}`;
+  const now  = Math.floor(Date.now()/1000);
 
-  // Все лиды брокера в воронке
+  const STAGE_NAMES_DD = {
+    82141386:'1. Новая заявка', 82141390:'~ НЕ дозвонился', 82141394:'2. Взят в работу',
+    82143450:'3. Квалифицирован', 82143454:'4. Встреча назначена', 82143458:'5. Встреча проведена',
+    82143462:'6. Показ назначен', 83396946:'7. Показ проведен',
+    82143466:'8. Бронь объекта', 82143470:'9. Подписание ДДУ', 142:'11. Комиссия получена', 143:'~ Архив'
+  };
+  const ACTIVE_IDS_DD = new Set([82143450,82143454,82143458,82143462,83396946,82143466,82143470]);
+
   const bAll    = allLeads.filter(l=>l.responsible_user_id===uid);
-  const bActive = bAll.filter(l=>(stages[l.status_id]?.name||'').match(/^[3-9]\./));
+  const bActive = bAll.filter(l=>ACTIVE_IDS_DD.has(l.status_id));
   const bNew    = newLeads.filter(l=>l.responsible_user_id===uid);
   const bLeadIds = new Set(bAll.map(l=>l.id));
   const bTasks  = tasks.filter(t=>bLeadIds.has(t.entity_id));
-  const now     = Math.floor(Date.now()/1000);
   const bOverdue = bTasks.filter(t=>t.complete_till&&t.complete_till<now);
-  const bNoTask  = bActive.filter(l=>!new Set(bTasks.map(t=>t.entity_id)).has(l.id));
   const conv     = bNew.length>0?Math.round(bActive.length/bNew.length*100):0;
 
   document.getElementById('dd-name').textContent=name;
   document.getElementById('dd-meta').textContent=`${bAll.length} всего в воронке · ${bNew.length} новых за период`;
 
-  // KPI
   document.getElementById('dd-kpi').innerHTML=`
     <div class="kpi-card"><div class="kpi-label">Всего в воронке</div><div class="kpi-value">${bAll.length}</div><div class="kpi-sub">все лиды сейчас</div></div>
     <div class="kpi-card orange"><div class="kpi-label">В работе (3+)</div><div class="kpi-value">${bActive.length}</div><div class="kpi-sub">квалиф. и выше</div></div>
     <div class="kpi-card red"><div class="kpi-label">Просрочено</div><div class="kpi-value">${bOverdue.length}</div><div class="kpi-sub">задач</div></div>
     <div class="kpi-card green"><div class="kpi-label">Конверсия</div><div class="kpi-value">${conv}%</div><div class="kpi-sub">новые → в работе</div></div>`;
 
-  // Распределение по этапам
   const stageCounts={};
-  bAll.forEach(l=>{const s=stages[l.status_id]?.name||'—';stageCounts[s]=(stageCounts[s]||0)+1;});
+  bAll.forEach(l=>{stageCounts[l.status_id]=(stageCounts[l.status_id]||0)+1;});
   const maxSC=Math.max(...Object.values(stageCounts),1);
-  const stageOrder=['1. Новая заявка','2. Взят в работу','~ НЕ дозвонился','3. Квалифицирован','4. Встреча назначена','5. Встреча проведена','6. Показ назначен','7. Показ проведен','8. Бронь объекта','9. Подписание ДДУ'];
-  const stageKeys=stageOrder.filter(s=>stageCounts[s]).concat(Object.keys(stageCounts).filter(s=>!stageOrder.includes(s)&&stageCounts[s]));
-  const stagesHtml=stageKeys.map(s=>`
+  const stageOrderDD=[82141386,82141390,82141394,82143450,82143454,82143458,82143462,83396946,82143466,82143470,142,143];
+  const stageKeys=stageOrderDD.filter(id=>stageCounts[id]);
+  const stagesHtml=stageKeys.map(id=>`
     <div class="stage-bar">
-      <div class="stage-bar-name">${s}</div>
-      <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${Math.round(stageCounts[s]/maxSC*100)}%"></div></div>
-      <div class="stage-bar-count">${stageCounts[s]}</div>
+      <div class="stage-bar-name">${STAGE_NAMES_DD[id]||stages[id]?.name||`ID:${id}`}</div>
+      <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${Math.round(stageCounts[id]/maxSC*100)}%"></div></div>
+      <div class="stage-bar-count">${stageCounts[id]}</div>
     </div>`).join('')||'<div class="empty">Нет данных</div>';
 
-  // Новые лиды за период
   const leadsHtml=bNew.sort((a,b)=>b.created_at-a.created_at).slice(0,100).map(l=>{
     const d=new Date(l.created_at*1000);
     const ds=d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
     const tags=l._embedded?.tags?.map(t=>t.name).join(', ')||'—';
-    const sname=stages[l.status_id]?.name||'—';
-    const sc=sname.match(/^[3-9]\./)?'badge-ok':sname.includes('Архив')?'badge-danger':'badge-muted';
+    const sname=STAGE_NAMES_DD[l.status_id]||stages[l.status_id]?.name||'—';
+    const sc=ACTIVE_IDS_DD.has(l.status_id)?'badge-ok':l.status_id===143?'badge-danger':'badge-muted';
     return `<tr>
       <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted2)">${ds}</td>
       <td style="color:var(--muted2);font-size:11px">${tags}</td>
@@ -550,13 +575,10 @@ function openBroker(uid) {
   document.getElementById('dd-body').innerHTML=`
     <div class="section-title">Распределение по этапам</div>
     <div style="margin-bottom:28px">${stagesHtml}</div>
-
     <div class="section-title">Новые лиды за период</div>
     <div class="table-wrap" style="margin-bottom:0">
       <table style="min-width:500px">
-        <thead><tr>
-          <th>Дата</th><th>Тег</th><th>ID</th><th>Название</th><th>Этап сейчас</th>
-        </tr></thead>
+        <thead><tr><th>Дата</th><th>Тег</th><th>ID</th><th>Название</th><th>Этап сейчас</th></tr></thead>
         <tbody>${leadsHtml}</tbody>
       </table>
     </div>`;
