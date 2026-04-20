@@ -472,7 +472,13 @@ function renderLeads(leads){
   const filtered=currentBrokerFilter==='all'?leads:leads.filter(l=>(u[l.responsible_user_id]||'')===currentBrokerFilter);
   const tbody=document.getElementById('leads-tbody');
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="6" class="empty">Нет лидов</td></tr>';return;}
-  tbody.innerHTML=filtered.sort((a,b)=>b.created_at-a.created_at).slice(0,200).map(l=>{
+  // Сортировка: лучший этап сверху, внутри этапа — по дате (новые сверху)
+  const stageRank = {82143470:0,82143466:1,83396946:2,82143462:3,82143458:4,82143454:5,82143450:6,142:7,143:8};
+  const getRank = sid => stageRank[sid] !== undefined ? stageRank[sid] : 99;
+  tbody.innerHTML=filtered.sort((a,b)=>{
+    const rd = getRank(a.status_id) - getRank(b.status_id);
+    return rd !== 0 ? rd : b.created_at - a.created_at;
+  }).slice(0,200).map(l=>{
     const d=new Date(l.created_at*1000);
     const ds=d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
     const broker=u[l.responsible_user_id]||`ID:${l.responsible_user_id}`;
