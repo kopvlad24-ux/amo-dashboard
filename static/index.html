@@ -152,7 +152,6 @@
           <th class="num">ДДУ</th>
           <th class="num">Без задач</th>
           <th class="num">Просроч.</th>
-          <th class="num">Конверсия</th>
         </tr>
       </thead>
       <tbody id="funnel-tbody"><tr><td colspan="10" class="empty">Нажмите «Загрузить»</td></tr></tbody>
@@ -399,12 +398,6 @@ function renderDashboard(leads,newL,tasks,users,stages) {
       <td class="num">${ddu}</td>
       <td class="num"><span class="badge ${noTask>5?'badge-warn':''}">${noTask}</span></td>
       <td class="num"><span class="badge ${odClass}">${overdue}</span></td>
-      <td class="num">
-        <div class="conv-bar">
-          <span style="font-size:12px">${typeof conv==='number'?conv+'%':'—'}</span>
-          <div class="conv-track"><div class="conv-fill" style="width:${Math.min(convNum,100)}%;background:${convNum>=33?'var(--green)':convNum>0?'var(--accent2)':'var(--border)'}"></div></div>
-        </div>
-      </td>
     </tr>`;
   }).join('')||'<tr><td colspan="10" class="empty">Нет данных</td></tr>';
 
