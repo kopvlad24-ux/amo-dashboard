@@ -299,10 +299,9 @@ async function loadAll() {
   const btn=document.getElementById('btn-refresh');
   btn.disabled=true; btn.textContent='↻ ЗАГРУЗКА...';
   try {
-    const tokenRes = await fetch('/api/token');
-    const tokenData = await tokenRes.json();
-    if (!tokenData.token) throw new Error('Токен не настроен. Задайте AMO_ACCESS_TOKEN.');
-    cfg.token = tokenData.token;
+    const healthRes = await fetch('/api/health');
+    const healthData = await healthRes.json();
+    if (!healthData.amo_configured) throw new Error('Токен AmoCRM не настроен на сервере.');
 
     const groupRes = await fetch('/api/group_users');
     const groupData = await groupRes.json();

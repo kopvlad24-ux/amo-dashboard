@@ -1,26 +1,55 @@
-from flask import Flask, jsonify, request, send_from_directory
-from flask_cors import CORS
+from flask import Flask, jsonify, request, send_from_directory, Response
+import hmac
 import requests
 import os
 
 app = Flask(__name__, static_folder='static')
-CORS(app)
 
-SUBDOMAIN = 'c21pp'
+SUBDOMAIN = os.environ.get('AMO_SUBDOMAIN', 'c21pp')
 BASE = f'https://{SUBDOMAIN}.amocrm.ru'
 CLUB_GROUP_ID = 689470
 EXCLUDED_USER_IDS = {13290234, 13324978}
 
 CLIENT_ID     = os.environ.get('AMO_CLIENT_ID', '')
 CLIENT_SECRET = os.environ.get('AMO_CLIENT_SECRET', '')
+DASHBOARD_USER = os.environ.get('DASHBOARD_USER', '')
+DASHBOARD_PASSWORD = os.environ.get('DASHBOARD_PASSWORD', '')
 
-# Храним актуальный токен в памяти (обновляется через refresh)
-_current_token = {'value': os.environ.get('AMO_ACCESS_TOKEN', '')}
+# AMO_TOKEN поддерживает долгосрочный токен, уже используемый в других сервисах.
+# AMO_ACCESS_TOKEN оставлен для OAuth-интеграций.
+_current_token = {'value': os.environ.get('AMO_ACCESS_TOKEN') or os.environ.get('AMO_TOKEN', '')}
 _refresh_token  = {'value': os.environ.get('AMO_REFRESH_TOKEN', '')}
 
-@app.route('/api/token')
-def get_token():
-    return jsonify({'token': _current_token['value']})
+ALLOWED_PROXY_PATHS = {'users', 'leads', 'leads/pipelines', 'tasks'}
+
+@app.before_request
+def require_dashboard_auth():
+    if request.path == '/api/health':
+        return None
+    if not DASHBOARD_USER or not DASHBOARD_PASSWORD:
+        return jsonify({'error': 'Dashboard credentials are not configured'}), 503
+    auth = request.authorization
+    valid = (
+        auth
+        and hmac.compare_digest(auth.username or '', DASHBOARD_USER)
+        and hmac.compare_digest(auth.password or '', DASHBOARD_PASSWORD)
+    )
+    if not valid:
+        return Response(
+            'Authentication required',
+            401,
+            {'WWW-Authenticate': 'Basic realm="AMO Dashboard"'}
+        )
+    return None
+
+@app.route('/api/health')
+def health():
+    return jsonify({
+        'status': 'ok',
+        'amo_configured': bool(_current_token['value']),
+        'dashboard_auth_configured': bool(DASHBOARD_USER and DASHBOARD_PASSWORD),
+        'amo_domain': f'{SUBDOMAIN}.amocrm.ru'
+    })
 
 @app.route('/')
 def index():
@@ -28,6 +57,8 @@ def index():
 
 @app.route('/api/proxy/<path:path>')
 def proxy(path):
+    if path not in ALLOWED_PROXY_PATHS:
+        return jsonify({'error': 'AMO resource is not allowed'}), 403
     token = _current_token['value']
     if not token:
         return jsonify({'error': 'No token configured'}), 401
@@ -99,23 +130,6 @@ def group_users():
             'group_name': 'Клуб чемпионов',
             'count': len(filtered)
         })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/refresh', methods=['POST'])
-def refresh_token():
-    data = request.json
-    if not CLIENT_ID or not CLIENT_SECRET:
-        return jsonify({'error': 'CLIENT_ID/CLIENT_SECRET не заданы на сервере'}), 500
-    try:
-        r = requests.post(f'{BASE}/oauth2/access_token', json={
-            'client_id':     CLIENT_ID,
-            'client_secret': CLIENT_SECRET,
-            'grant_type':    'refresh_token',
-            'refresh_token': data.get('refresh_token', ''),
-            'redirect_uri':  'https://localhost'
-        }, timeout=15)
-        return (r.content, r.status_code, {'Content-Type': 'application/json'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
