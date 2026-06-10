@@ -16,6 +16,17 @@ DASHBOARD_USER=<логин для входа в дашборд>
 DASHBOARD_PASSWORD=<сложный пароль для входа в дашборд>
 ```
 
+## Existing REG.RU deployment
+
+Если приложение уже размещено на REG.RU, создайте рядом с `server.py` файл
+`.env` по образцу `.env.example`, затем перезапустите приложение.
+
+Убедитесь, что после обновления установлены зависимости:
+
+```bash
+pip install -r requirements.txt
+```
+
 Для OAuth вместо `AMO_TOKEN`:
 
 ```text

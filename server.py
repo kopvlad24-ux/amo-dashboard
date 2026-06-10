@@ -1,7 +1,10 @@
 from flask import Flask, jsonify, request, send_from_directory, Response
+from dotenv import load_dotenv
 import hmac
 import requests
 import os
+
+load_dotenv()
 
 app = Flask(__name__, static_folder='static')
 
