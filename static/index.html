@@ -221,6 +221,9 @@ let _lastUsers = {}, _lastStages = {};
 let currentBrokerFilter = 'all';
 let _cache = { allLeads:[], newLeads:[], tasks:[], users:{}, stages:{} };
 
+// Вся статистика дашборда считается только по воронке НОВОСТРОЙКИ 2.0.
+const PIPELINE_NOVOSTROI_20 = 10391694;
+
 // ID этапов воронки НОВОСТРОЙКИ 2.0
 const S = {
   QUAL:  82143450,
@@ -315,16 +318,24 @@ async function loadAll() {
     const stages={};
     pipelinesRaw.forEach(p=>(p._embedded?.statuses||[]).forEach(s=>stages[s.id]={name:s.name,pipeline:p.name}));
 
-    const novostroi = pipelinesRaw.find(p=>p.name&&p.name.includes('Новостройки 2.0'));
-    const novostroiId = novostroi?novostroi.id:null;
-
-    allLeads = (await fetchAll('leads',{'with':'tags'}))
-      .filter(l=>filteredUserIds.has(l.responsible_user_id)&&(!novostroiId||l.pipeline_id===novostroiId));
+    allLeads = (await fetchAll('leads',{
+      'filter[pipeline_id]':PIPELINE_NOVOSTROI_20,
+      'with':'tags'
+    })).filter(l=>
+      filteredUserIds.has(l.responsible_user_id)&&l.pipeline_id===PIPELINE_NOVOSTROI_20
+    );
 
     const dateFrom=toTs(cfg.dateFrom||document.getElementById('inp-date-from').value);
     const dateTo=toTs(cfg.dateTo||document.getElementById('inp-date-to').value)+86399;
-    const newLeadsAll = await fetchAll('leads',{'filter[created_at][from]':dateFrom,'filter[created_at][to]':dateTo,'with':'tags'});
-    newLeads = newLeadsAll.filter(l=>filteredUserIds.has(l.responsible_user_id)&&(!novostroiId||l.pipeline_id===novostroiId));
+    const newLeadsAll = await fetchAll('leads',{
+      'filter[pipeline_id]':PIPELINE_NOVOSTROI_20,
+      'filter[created_at][from]':dateFrom,
+      'filter[created_at][to]':dateTo,
+      'with':'tags'
+    });
+    newLeads = newLeadsAll.filter(l=>
+      filteredUserIds.has(l.responsible_user_id)&&l.pipeline_id===PIPELINE_NOVOSTROI_20
+    );
 
     const allLeadIds = new Set(allLeads.map(l=>l.id));
     const tasksRaw = await fetchAll('tasks',{'filter[is_completed]':0});
