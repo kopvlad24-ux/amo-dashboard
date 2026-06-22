@@ -377,7 +377,8 @@ function renderDashboard(leads,newL,tasks,users,stages) {
 
   let totalQual=0;
   leads.forEach(l=>{if(isActive(l.status_id))totalQual++;});
-  const totalConv=newL.length>0?Math.round(totalQual/newL.length*100):0;
+  const totalNewInWork=newL.filter(l=>isActive(l.status_id)).length;
+  const totalConv=newL.length>0?Math.round(totalNewInWork/newL.length*100):0;
   document.getElementById('kpi-total').textContent=leads.filter(l=>isActive(l.status_id)).length;
   document.getElementById('kpi-new').textContent=newL.length;
   document.getElementById('kpi-qual').textContent=totalQual;
@@ -395,7 +396,8 @@ function renderDashboard(leads,newL,tasks,users,stages) {
     const ddu=sc[S.DDU]||0;
     const overdue=overdueByUser[b.uid]||0;
     const noTask=b.activeLeads.filter(l=>!leadsWithTasks.has(l.id)).length;
-    const conv=b.newLeads.length>0?Math.round(inWork/b.newLeads.length*100):'—';
+    const newInWork=b.newLeads.filter(l=>isActive(l.status_id)).length;
+    const conv=b.newLeads.length>0?Math.round(newInWork/b.newLeads.length*100):'—';
     const convNum=typeof conv==='number'?conv:0;
     const odClass=overdue>10?'badge-danger':overdue>3?'badge-warn':'';
     return `<tr>
@@ -511,7 +513,8 @@ function openBroker(uid) {
   const bLeadIds=new Set(bAll.map(l=>l.id));
   const bTasks=tasks.filter(t=>bLeadIds.has(t.entity_id));
   const bOverdue=bTasks.filter(t=>t.complete_till&&t.complete_till<now);
-  const conv=bNew.length>0?Math.round(bActive.length/bNew.length*100):0;
+  const bNewInWork=bNew.filter(l=>ACTIVE_IDS.has(l.status_id)).length;
+  const conv=bNew.length>0?Math.round(bNewInWork/bNew.length*100):0;
 
   document.getElementById('dd-name').textContent=name;
   document.getElementById('dd-meta').textContent=`${bAll.length} всего в воронке · ${bNew.length} новых за период`;
